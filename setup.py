@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='hdwallet',
-    version='0.1dev',
+    version='0.2',
     packages=['hdwallet'],
     license='MIT',
     author='Felix Weis',

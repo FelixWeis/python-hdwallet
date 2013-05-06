@@ -141,7 +141,7 @@ class HDWallet():
 
 
 	@classmethod
-	def from_extented_key(klass, extended_key):
+	def from_extended_key(klass, extended_key):
 		decoded = base58.b58decode(extended_key, 78+4)
 		assert(decoded)
 		ekdata = decoded[:78]
@@ -225,7 +225,7 @@ def main():
 
 
 	# 4. On the webserver we can generate child wallets, 
-	webserver_wallet = HDWallet.from_extented_key(pub_master_key)
+	webserver_wallet = HDWallet.from_extended_key(pub_master_key)
 	child2342 = webserver_wallet.child(23).child(42)
 	print '- Public Extended Key (M):', pub_master_key
 	print 'Child: M/23/42'
@@ -235,7 +235,7 @@ def main():
 
 
 	# 5. In case we need the private key for a child wallet, start with the private master key
-	cold_wallet = HDWallet.from_extented_key(prv_master_key)
+	cold_wallet = HDWallet.from_extended_key(prv_master_key)
 	child2342 = cold_wallet.child(23).child(42)
 	print '- Private Extended Key (m):', prv_master_key
 	print 'Child: m/23/42'

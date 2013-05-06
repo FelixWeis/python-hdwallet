@@ -14,7 +14,7 @@ The classic generation of a new bitcoin address requires basically 3 steps:
 
 If the webserver gets hacked and the private keys are stored on it an attacker can steal all user funds.
 
-### Address generation whitout a private key
+### Address generation without a private key
 
 Based on the mathematical properties of ECC we can apply equivalent operations on a private key and its public key. The resulting keys will be a new corresponding keypair. In pseudocode:
 
@@ -48,7 +48,7 @@ pub_master_key = master.to_extended_key()
 
 
 # 4. On the webserver we can generate child wallets
-webserver_wallet = HDWallet.from_extented_key(pub_master_key)
+webserver_wallet = HDWallet.from_extended_key(pub_master_key)
 child2342 = webserver_wallet.child(23).child(42)
 print '- Public Extended Key (M):', pub_master_key
 print 'Child: M/23/42'
@@ -58,7 +58,7 @@ print ''
 
 
 # 5. In case we need the private key for a child wallet, start with the private master key
-cold_wallet = HDWallet.from_extented_key(prv_master_key)
+cold_wallet = HDWallet.from_extended_key(prv_master_key)
 child2342 = cold_wallet.child(23).child(42)
 print '- Private Extended Key (m):', prv_master_key
 print 'Child: m/23/42'
