@@ -115,6 +115,8 @@ class HDWallet():
 			return util.number_to_string(self.__prvkey, SECP256k1.order)
 		return None
 
+	def chain(self):
+		return self.__chain
 
 	def address(self, versionByte=None):
 		if versionByte == None:
@@ -179,8 +181,8 @@ class HDWallet():
 	@classmethod
 	def from_master_seed(klass, master_seed, testnet=False):
 		deriv = hmac.new(key='Bitcoin seed', msg=master_seed, digestmod=hashlib.sha512).digest()
-		master_key = util.string_to_number(deriv[32:]) % SECP256k1.order
-		master_chain = deriv[:32]
+		master_key = util.string_to_number(deriv[:32]) % SECP256k1.order
+		master_chain = deriv[32:]
 		return klass(master_key, master_chain, testnet=testnet)
 
 
