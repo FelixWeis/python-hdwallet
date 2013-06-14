@@ -44,20 +44,28 @@ class HDWallet():
 
 	def child(self, i):
 		assert( 0 <= i <= 2**32-1)
-		if (0x80000000 <= i):
-			raise NotImplementedError('no secret derivation in this version use i < 0x800000')
-		str_i = util.number_to_string(i, 2**32-1)
-		str_K = point_compress(self.point())
 		
-		# only allow up to a depth of 255
-		assert( self.__depth < 0xff) 
+		priv_deriv = (i & 0x80000000) != 0
 
-		deriv = hmac.new(key=self.__chain, msg=str_K + str_i, digestmod=hashlib.sha512).digest()
+		if (priv_deriv and not self.__prvkey):
+			raise Exception('Unable to do private derivation')
+
+		# only allow up to a depth of 255
+		assert(self.__depth < 0xff) 
+		
+		str_i = util.number_to_string(i, 2**32-1)
+
+		if priv_deriv:
+			str_k = util.number_to_string(self.__prvkey, SECP256k1.order)
+			deriv = hmac.new(key=self.__chain, msg='\x00' + str_k + str_i, digestmod=hashlib.sha512).digest()
+		else:
+			str_K = point_compress(self.point())
+			deriv = hmac.new(key=self.__chain, msg=str_K + str_i, digestmod=hashlib.sha512).digest()
 
 		childChain  = deriv[32:]
 		childModifier = util.string_to_number(deriv[:32])
 		
-		if self.__prvkey:
+		if priv_deriv:
 			childPrvkey = (self.__prvkey + childModifier) % SECP256k1.order 
 			childKey = childPrvkey
 		else: 
@@ -105,6 +113,7 @@ class HDWallet():
 
 
 	def pubkey(self):
+
 		x_str = util.number_to_string(self.point().x(), SECP256k1.order)
 		y_str = util.number_to_string(self.point().y(), SECP256k1.order)
 		return x_str + y_str
@@ -121,7 +130,7 @@ class HDWallet():
 	def address(self, versionByte=None):
 		if versionByte == None:
 			versionByte = '\x00' if not self.__testnet else '\x6F'
-		return base58.public_key_to_bc_address('\x04' + self.pubkey(), versionByte)
+		return base58.public_key_to_bc_address(point_compress(self.point()), versionByte)
 
 
 	def depth(self):
@@ -129,7 +138,7 @@ class HDWallet():
 
 
 	def fingerprint(self):
-		return base58.hash_160(self.pubkey())[:4]
+		return base58.hash_160(point_compress(self.point()))[:4]
 
 
 	def parentfp(self):
@@ -191,14 +200,8 @@ def point_compress(point):
 	y = point.y()
 	curve = point.curve()
 
-	test_y = numbertheory.square_root_mod_prime( 
-	  ( x * x * x + curve.a() * x + curve.b() ) % curve.p(),  curve.p()
-	)
+	return chr(2 + (y & 1)) + util.number_to_string(x, curve.p())
 
-	parity = 1 if test_y == y else -1
-
-	prefix = '\x02' if parity == 1 else '\x03'
-	return prefix + util.number_to_string(x, curve.p())
 
 def point_decompress(curve, data):
 	prefix = data[0]
