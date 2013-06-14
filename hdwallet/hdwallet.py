@@ -65,7 +65,7 @@ class HDWallet():
 		childChain  = deriv[32:]
 		childModifier = util.string_to_number(deriv[:32])
 		
-		if priv_deriv:
+		if self.__prvkey:
 			childPrvkey = (self.__prvkey + childModifier) % SECP256k1.order 
 			childKey = childPrvkey
 		else: 

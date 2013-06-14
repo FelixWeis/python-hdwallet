@@ -16,19 +16,28 @@ def SecretToASecret(secret, compressed=False, addrtype=0):
     if compressed: vchIn += '\01'
     return EncodeBase58Check(vchIn)
 
-def print_info(key, desc):
+def print_info(key, chain):
   
-  prv_key = key.to_extended_key(include_prv=key.prvkey() is not None)
+  prv_key = key.to_extended_key(include_prv=key.prvkey())
   pub_key = key.to_extended_key()
 
+  desc ='  * [Chain m'
+  for c in chain:
+    if c&0x80000000:
+      desc = desc + '/%d\'' % (c & ~0x80000000)
+    else:
+      desc = desc + '/%d' % c
+  desc = desc + ']'
+
   print desc
+
   print '    * Identifier'
   print '      * (hex):       %s' % base58.hash_160(point_compress(key.point())).encode('hex')
   print '      * (fpr):       0x%s' % key.fingerprint().encode('hex')
   print '      * (main addr): %s' % key.address()
   print '    * Secret key'
-  print '      * (hex):       %s' % (key.prvkey().encode('hex') if key.prvkey() is not None else 'n/a')
-  print '      * (wif):       %s' % (SecretToASecret(key.prvkey(), True) if key.prvkey() is not None else 'n/a')
+  print '      * (hex):       %s' % key.prvkey().encode('hex')
+  print '      * (wif):       %s' % SecretToASecret(key.prvkey(), True)
   print '    * Public key'
   print '      * (hex):       %s' % point_compress(key.point()).encode('hex')
   print '    * Chain code'
@@ -39,29 +48,33 @@ def print_info(key, desc):
   print '      * (pub b58):   %s' % pub_key
   print '      * (prv b58):   %s' % prv_key
 
-def main():
-  seed = '000102030405060708090a0b0c0d0e0f'
 
+def test_vector(seed, seq):
   print '* Master (hex): %s' % seed
 
-  master = HDWallet.from_master_seed(seed.decode('hex'))
-  print_info(master, '  * [Chain m]')
+  current = HDWallet.from_master_seed(seed.decode('hex'))
+  print_info(current, [])
+  
+  for i in xrange(len(seq)):
+    current = current.child(seq[i])
+    print_info(current, seq[:i+1])
 
-  ch = master.child(0x80000000)
-  print_info(ch, '  * [Chain m/0\']')
 
-  ch = ch.child(1)
-  print_info(ch, '  * [Chain m/0\'/1]')
+def main():
 
-  # ch = ch.child(0x80000002)
-  # print_info(ch, '  * [Chain m/0\'/1/2\']')
+  seed = '000102030405060708090a0b0c0d0e0f'
+  seq = [0x80000000, 1, 0x80000002, 2, 1000000000]
 
-  # ch = ch.child(2)
-  # print_info(ch, '  * [Chain m/0\'/1/2\'/2]')
+  print '---- Test Vector 1 ----'
+  test_vector(seed, seq)
 
-  # ch = ch.child(1000000000)
-  # print_info(ch, '  * [Chain m/0\'1/2\'/2/0\']')
-
+  # --- test vector 2
+  seed = 'fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542'
+  seq = [0, 0xFFFFFFFF, 1, 0xFFFFFFFE, 2]
+  
+  print '---- Test Vector 2 ----'
+  test_vector(seed, seq)
+  
 
 if __name__ == "__main__":
   main()
