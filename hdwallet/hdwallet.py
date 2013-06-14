@@ -64,12 +64,21 @@ class HDWallet():
 
 		childChain  = deriv[32:]
 		childModifier = util.string_to_number(deriv[:32])
+
+		if childModifier >= SECP256k1.order:
+			raise Exception('This is higly unprovable IL >= n, but it did happen')
 		
 		if self.__prvkey:
 			childPrvkey = (self.__prvkey + childModifier) % SECP256k1.order 
+			if childPrvkey == 0:
+				raise Exception('This is higly unprovable ki = 0, but it did happen')
+
 			childKey = childPrvkey
 		else: 
 			childPubkey = self.point() + SECP256k1.generator * childModifier
+			if childPubkey == ellipticcurve.INFINITY:
+				raise Exception('This is higly unprovable Ki = INFINITY, but it did happen')
+
 			childKey = childPubkey
 
 		return self.__class__(childKey, childChain, 

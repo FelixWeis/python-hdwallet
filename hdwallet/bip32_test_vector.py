@@ -62,19 +62,17 @@ def test_vector(seed, seq):
 
 def main():
 
+  # --- test vector 1
   seed = '000102030405060708090a0b0c0d0e0f'
   seq = [0x80000000, 1, 0x80000002, 2, 1000000000]
-
   print '---- Test Vector 1 ----'
   test_vector(seed, seq)
 
   # --- test vector 2
   seed = 'fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542'
   seq = [0, 0xFFFFFFFF, 1, 0xFFFFFFFE, 2]
-  
   print '---- Test Vector 2 ----'
   test_vector(seed, seq)
-  
 
 if __name__ == "__main__":
   main()
