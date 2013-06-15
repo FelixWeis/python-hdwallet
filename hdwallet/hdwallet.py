@@ -44,24 +44,41 @@ class HDWallet():
 
 	def child(self, i):
 		assert( 0 <= i <= 2**32-1)
-		if (0x80000000 <= i):
-			raise NotImplementedError('no secret derivation in this version use i < 0x800000')
-		str_i = util.number_to_string(i, 2**32-1)
-		str_K = point_compress(self.point())
 		
-		# only allow up to a depth of 255
-		assert( self.__depth < 0xff) 
+		priv_deriv = (i & 0x80000000) != 0
 
-		deriv = hmac.new(key=self.__chain, msg=str_K + str_i, digestmod=hashlib.sha512).digest()
+		if (priv_deriv and not self.__prvkey):
+			raise Exception('Unable to do private derivation')
+
+		# only allow up to a depth of 255
+		assert(self.__depth < 0xff) 
+		
+		str_i = util.number_to_string(i, 2**32-1)
+
+		if priv_deriv:
+			str_k = util.number_to_string(self.__prvkey, SECP256k1.order)
+			deriv = hmac.new(key=self.__chain, msg='\x00' + str_k + str_i, digestmod=hashlib.sha512).digest()
+		else:
+			str_K = point_compress(self.point())
+			deriv = hmac.new(key=self.__chain, msg=str_K + str_i, digestmod=hashlib.sha512).digest()
 
 		childChain  = deriv[32:]
 		childModifier = util.string_to_number(deriv[:32])
+
+		if childModifier >= SECP256k1.order:
+			raise Exception('This is higly unprovable IL >= n, but it did happen')
 		
 		if self.__prvkey:
 			childPrvkey = (self.__prvkey + childModifier) % SECP256k1.order 
+			if childPrvkey == 0:
+				raise Exception('This is higly unprovable ki = 0, but it did happen')
+
 			childKey = childPrvkey
 		else: 
 			childPubkey = self.point() + SECP256k1.generator * childModifier
+			if childPubkey == ellipticcurve.INFINITY:
+				raise Exception('This is higly unprovable Ki = INFINITY, but it did happen')
+
 			childKey = childPubkey
 
 		return self.__class__(childKey, childChain, 
@@ -105,6 +122,7 @@ class HDWallet():
 
 
 	def pubkey(self):
+
 		x_str = util.number_to_string(self.point().x(), SECP256k1.order)
 		y_str = util.number_to_string(self.point().y(), SECP256k1.order)
 		return x_str + y_str
@@ -115,11 +133,13 @@ class HDWallet():
 			return util.number_to_string(self.__prvkey, SECP256k1.order)
 		return None
 
+	def chain(self):
+		return self.__chain
 
 	def address(self, versionByte=None):
 		if versionByte == None:
 			versionByte = '\x00' if not self.__testnet else '\x6F'
-		return base58.public_key_to_bc_address('\x04' + self.pubkey(), versionByte)
+		return base58.public_key_to_bc_address(point_compress(self.point()), versionByte)
 
 
 	def depth(self):
@@ -127,7 +147,7 @@ class HDWallet():
 
 
 	def fingerprint(self):
-		return base58.hash_160(self.pubkey())[:4]
+		return base58.hash_160(point_compress(self.point()))[:4]
 
 
 	def parentfp(self):
@@ -179,8 +199,8 @@ class HDWallet():
 	@classmethod
 	def from_master_seed(klass, master_seed, testnet=False):
 		deriv = hmac.new(key='Bitcoin seed', msg=master_seed, digestmod=hashlib.sha512).digest()
-		master_key = util.string_to_number(deriv[32:]) % SECP256k1.order
-		master_chain = deriv[:32]
+		master_key = util.string_to_number(deriv[:32]) % SECP256k1.order
+		master_chain = deriv[32:]
 		return klass(master_key, master_chain, testnet=testnet)
 
 
@@ -189,14 +209,8 @@ def point_compress(point):
 	y = point.y()
 	curve = point.curve()
 
-	test_y = numbertheory.square_root_mod_prime( 
-	  ( x * x * x + curve.a() * x + curve.b() ) % curve.p(),  curve.p()
-	)
+	return chr(2 + (y & 1)) + util.number_to_string(x, curve.p())
 
-	parity = 1 if test_y == y else -1
-
-	prefix = '\x02' if parity == 1 else '\x03'
-	return prefix + util.number_to_string(x, curve.p())
 
 def point_decompress(curve, data):
 	prefix = data[0]
