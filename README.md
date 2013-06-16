@@ -68,14 +68,14 @@ print 'Privkey:', child2342.prvkey().encode('hex')
 
 The code above produces the following output
 ```
-- Public Extended Key (M): xpub661MyMwAqRbcG9LTVo1CGbgefKj61a2jUSRPof9U5m56tAX7qwix79CnQsrqELrWU2BUXk4i5QwPRxbXcGXqvXw8RPmCp6sN4FQmieBhyUU
+- Public Extended Key (M): xpub661MyMwAqRbcG7J3wr5XW6FEvDHbqUJrKGEXVUJMTuJWJqwV1rJWZPENd1jDkEdaGVs1RGMp5oWpJ89xTu2bkRSRSoxVpMzLG1ZXiYbBBgZ
 Child: M/23/42
-Address: 1AtnQqktHFmnY5TX5CcPX7FgLeYdRmwhJZ
+Address: 1PT7U5s9PTuXs1RK3ygoxFuAL59UjJZALV
 Privkey: None
 
-- Private Extended Key (m): xprv9s21ZrQH143K3fFzPmUBuTjv7Htbc7Jt7DVo1GjrXRY81NByJQQhZLtJZc6meKsmFqZrTy8W8gchWwWcg1qWziqgR4pCX1DsgrsNQcsXWEK
+- Private Extended Key (m): xprv9s21ZrQH143K3dDaqpYX8xJWNBT7S1azx3Jvh5tjuZmXS3cLUJzG1autmmmeSFzRZF2GQm7Dr8f36saxwZGoHjhHb4u33FgkTi3cvjgFeFK
 Child: m/23/42
-Address: 1AtnQqktHFmnY5TX5CcPX7FgLeYdRmwhJZ
-Privkey: 920e5afff66fa68165a5fba0c3721df6e2cace6dc764036d5bfb31ee1e90be1b
+Address: 1PT7U5s9PTuXs1RK3ygoxFuAL59UjJZALV
+Privkey: 04c0ff8c288ce5f21f7f3e5e50db24e13c75d72e6815a448deb35568c6c8ed1f
 ```
 
