@@ -2,5 +2,6 @@
 setup.py
 hdwallet/__init__.py
 hdwallet/base58.py
+hdwallet/bip32_test_vector.py
 hdwallet/curves.py
 hdwallet/hdwallet.py

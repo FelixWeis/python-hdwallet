@@ -33,6 +33,10 @@ To spend the funds later, we derive the private for the address in a secure, off
 
 For creating a hierachical wallet structure we use the child derivation function described in [BIP 0032](https://en.bitcoin.it/wiki/BIP_0032).
 
+### Installation
+```bash
+pip install hdwallet
+```
 
 ### Code example
 
