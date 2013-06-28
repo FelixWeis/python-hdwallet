@@ -121,7 +121,9 @@ class HDWallet():
 		return self.__pubkey
 
 
-	def pubkey(self):
+	def pubkey(self, compress=True):
+		if compress:
+			return point_compress(self.point()).encode('hex')
 
 		x_str = util.number_to_string(self.point().x(), SECP256k1.order)
 		y_str = util.number_to_string(self.point().y(), SECP256k1.order)
