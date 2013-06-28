@@ -211,22 +211,21 @@ def point_compress(point):
 
 	return chr(2 + (y & 1)) + util.number_to_string(x, curve.p())
 
-
 def point_decompress(curve, data):
 	prefix = data[0]
 	assert(prefix in ['\x02', '\x03'])
-	parity = 1 if prefix == '\x02' else -1
+	is_even = prefix == '\x02'
 
 	x = util.string_to_number(data[1:])
 
 	y = numbertheory.square_root_mod_prime( 
 	  ( x * x * x + curve.a() * x + curve.b() ) % curve.p(),  curve.p()
 	)
+	
+	if is_even == bool(y & 1):
+		return ellipticcurve.Point(curve, x, curve.p() - y)
 
-	y = parity * y % curve.p()
 	return ellipticcurve.Point(curve, x, y)
-
-
 
 def main():
 	# 1. generate a master wallet with a (random) seed 
