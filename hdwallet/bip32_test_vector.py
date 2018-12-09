@@ -18,7 +18,7 @@ def SecretToASecret(secret, compressed=False, addrtype=0):
 
 def print_info(key, chain):
   
-  prv_key = key.to_extended_key(include_prv=key.prvkey())
+  prv_key = key.to_extended_key(include_prv=True)
   pub_key = key.to_extended_key()
 
   desc ='  * [Chain m'
